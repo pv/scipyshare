@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{entry.title}}
+{% endblock %}
+
+{% block content %}
+
+<h1>{{entry.title}} [{{entry.entry_type.name}}]</h1>
+
+<dl>
+
+<dt>Description</dt>
+<dd>{{entry.description}}</dd>
+
+<dt>License</dt>
+<dd>{{entry.license.name}}</dd>
+
+<dt>Author</dt>
+<dd>{{entry.author}}</dd>
+
+<dt>Tags</dt>
+<dd>
+{% for tag in entry.tags.all %}
+<a href="" alt="{{tag.description}}"></a>{{tag.name}}</a>{% if not forloop.last %}, {% endif %}
+{% endfor %}
+</dd>
+
+{% if entry.url %}
+<dt>Home page</dt>
+<dd><a rel="nofollow" href="{{entry.url}}">{{entry.url}}</a></dd>
+{% endif %}
+
+{% if entry.pypi_name %}
+<dt>Package on Python Package Index</dt>
+<dd><a rel="nofollow" href="http://python.org/pypi/{{entry.pypi_name}}/">{{entry.pypi_name}}</a></dd>
+{% endif %}
+
+{% if entry.files %}
+<dt>Files</dt>
+<dd>TODO</dd>
+{% endif %}
+
+{% if entry.files %}
+<dt>Managed by</dt>
+<dd>
+</dd>
+{% endif %}
+
+{% endblock %}
