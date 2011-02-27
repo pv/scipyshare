@@ -1,3 +1,5 @@
+import re
+
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -37,19 +39,22 @@ class License(models.Model):
     text = models.TextField(help_text="full license text")
 
     def __str__(self):
-        return self.slug
+        return self.name
 
     class Meta:
         permissions = (("can_edit", "Can edit this license"),)
 
 class Entry(models.Model):
     title = models.CharField(max_length=256)
-    slug = models.SlugField(unique=True)
+    slug = models.CharField(max_length=256, unique=True)
 
     # Basic information
     description = models.TextField()
     license = models.ForeignKey(License)
     author = models.CharField(max_length=256)  # Name <email>
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+    change_comments = models.TextField()
 
     # Tagging information
     entry_type = models.ForeignKey(EntryType, related_name="entries")
@@ -64,6 +69,15 @@ class Entry(models.Model):
     # Ownership
     owners = models.ManyToManyField(User, related_name="entries", null=True)
 
+    @classmethod
+    def new_from_title(cls, title, **kw):
+        slug = generate_slug(title)
+        kw['slug'] = slug
+        return cls(title=title, **kw)
 
     def __str__(self):
         return self.slug
+
+def generate_slug(s):
+    s = s.strip()
+    return re.sub('-+', '-', re.sub(r'[^\w_.-]', '-', s)).lower()

@@ -19,10 +19,16 @@
 <dt>Author</dt>
 <dd>{{entry.author}}</dd>
 
+<dt>Created</dt>
+<dd>{{entry.created}}</dd>
+
+<dt>Modified</dt>
+<dd>{{entry.modified}}</dd>
+
 <dt>Tags</dt>
 <dd>
 {% for tag in entry.tags.all %}
-<a href="" alt="{{tag.description}}"></a>{{tag.name}}</a>{% if not forloop.last %}, {% endif %}
+<a href="{% url catalog.views.view_tag tag.name %}" title="{{tag.description|truncatewords:10}}">{{tag.name}}</a>{% if not forloop.last %}, {% endif %}
 {% endfor %}
 </dd>
 
@@ -36,15 +42,28 @@
 <dd><a rel="nofollow" href="http://python.org/pypi/{{entry.pypi_name}}/">{{entry.pypi_name}}</a></dd>
 {% endif %}
 
-{% if entry.files %}
+{% if fileset %}
 <dt>Files</dt>
-<dd>TODO</dd>
+<dd>
+{% for file in fileset.listdir %}
+<a href="{% url catalog.views.download entry.slug file %}">{{ file }}</a>
+{% endfor %}
+</dd>
 {% endif %}
 
-{% if entry.files %}
+{% if entry.owner %}
 <dt>Managed by</dt>
 <dd>
+TODO
 </dd>
+{% endif %}
+
+</dl>
+
+{% if snippet %}
+<h2>The code snippet</h2>
+<a href="{% url catalog.views.download entry.slug "snippet.py" %}">[raw]</a>
+<pre>{{ snippet }}</pre>
 {% endif %}
 
 {% endblock %}

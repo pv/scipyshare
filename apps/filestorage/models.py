@@ -7,10 +7,12 @@ from django.conf import settings
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 
+from django.db.models.signals import pre_delete
+
+
 class FileSet(models.Model):
     """
     A set of files, stored in a directory named ``name``.
-    It is assumed that ``name`` is always a valid directory name.
 
     """
 
@@ -18,13 +20,17 @@ class FileSet(models.Model):
     snippet_contents = models.TextField(null=True)
     # revisions -> [FileRevision]
 
-    def __init__(self, title):
+    @classmethod
+    def new_from_title(cls, title, **kw):
         """Generate a suitable slug for the given title --- always guaranteed
         to succeed in giving a new unique name for the file set"""
         name = _sanitize_name(title)
-        name = os.path.basename(default_storage.get_available_name(
+        kw['name'] = os.path.basename(default_storage.get_available_name(
             os.path.join('catalog', name)))
-        models.Model.__init__(self, name=name)
+        return cls(**kw)
+
+    def __str__(self):
+        return self.name
 
     def _get_snippet(self):
         return self.snippet_contents
@@ -44,10 +50,15 @@ class FileSet(models.Model):
 
     def path(self, file_name=''):
         if not file_name:
-            return os.path.join('catalog', self.name)
+            return os.path.join('catalog', _sanitize_name(self.name))
         else:
             file_name = _sanitize_name(file_name)
-            return os.path.join('catalog', self.name, file_name)
+            return os.path.join('catalog', _sanitize_name(self.name), file_name)
+
+    def _delete_all(self):
+        path = default_storage.path(self.path())
+        if os.path.isdir(path):
+            shutil.rmtree(path)
 
     def url(self, file_name):
         return default_storage.url(self.path(file_name))
@@ -74,13 +85,11 @@ class FileSet(models.Model):
     def write_readme(self, text):
         self.write_file('README.txt', ContentFile(text.encode('utf-8')))
 
-class Revision(models.Model):
-    version = models.CharField(max_length=50)
-    comment = models.TextField()
-    created = models.DateTimeField()
+def _deletion_handler(sender, **kwargs):
+    if 'instance' in kwargs:
+        kwargs['instance']._delete_all()
 
-    fileset = models.ForeignKey(FileSet, related_name="revisions")
-
+pre_delete.connect(_deletion_handler, sender=FileSet)
 
 def _sanitize_name(name):
     name = re.sub('[^a-zA-Z0-9-_. ]', '', name).strip()

@@ -104,7 +104,9 @@
 			  "maturity": 0.0,
 			  "url": "http://www.foo.bar",
 			  "pypi_name": "SomeModule",
-			  "tags": [1, 3]
+			  "tags": [1, 3],
+			  "created": "2011-02-01 00:00:00",
+			  "modified": "2011-02-01 00:00:00"
 		}
 	}
 ]
