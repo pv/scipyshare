@@ -1,86 +1,127 @@
 [
 	{
+		"model": "community.tagcategory",
+		"pk": 1,
+		"fields": {
+			"name": "Topic",
+			"description": "Topic of the entry"
+                }
+	},
+	{
+		"model": "community.tagcategory",
+		"pk": 2,
+		"fields": {
+			"name": "Quality",
+			"description": "Quality of the entry"
+		}
+	},
+	{
+		"model": "community.tagcategory",
+		"pk": 3,
+		"fields": {
+			"name": "Maturity",
+			"description": "Maturity of the software"
+		}
+	},
+	{
 		"model": "community.tag",
 		"pk": 1,
 		"fields": {
-			  "name": "package",
-			  "description": "A complete Python package"
+			"category": 1,
+			"name": "optimization",
+			"description": "For minimizing and maximizing something",
+			"entries": [1]
 		}
 	},
 	{
 		"model": "community.tag",
 		"pk": 2,
 		"fields": {
-			  "name": "module",
-			  "description": "A stand-alone Python module",
-			  "entries": [1]
+			"category": 1,
+			"name": "spatial",
+			"description": "For handling spatial data"
 		}
 	},
 	{
 		"model": "community.tag",
 		"pk": 3,
 		"fields": {
-			  "name": "snippet",
-			  "description": "Code snippet"
+			"category": 1,
+			"name": "interpolation",
+			"description": "For interpolating data"
 		}
 	},
 	{
 		"model": "community.tag",
 		"pk": 4,
 		"fields": {
-			  "name": "optimization",
-			  "description": "For minimizing and maximizing something",
-			  "entries": [1]
+			"category": 1,
+			"name": "machine learning",
+			"description": "Machine learning"
 		}
 	},
 	{
 		"model": "community.tag",
 		"pk": 5,
 		"fields": {
-			  "name": "spatial",
-			  "description": "For handling spatial data"
+			"category": 1,
+			"name": "dynamical systems",
+			"description": "Dynamical systems (ODEs etc.)"
 		}
 	},
 	{
 		"model": "community.tag",
 		"pk": 6,
 		"fields": {
-			  "name": "interpolation",
-			  "description": "For interpolating data"
+			"category": 1,
+			"name": "PDE",
+			"description": "Partial differential equations"
 		}
 	},
 	{
 		"model": "community.tag",
 		"pk": 7,
 		"fields": {
-			  "name": "machine learning",
-			  "description": "Machine learning"
+			"category": 2,
+			"name": "reliable",
+			"description": "Results from this entry have been verified extensively independently and found valid"
 		}
 	},
 	{
 		"model": "community.tag",
 		"pk": 8,
 		"fields": {
-			  "name": "dynamical systems",
-			  "description": "Dynamical systems (ODEs etc.)"
+			"category": 2,
+			"name": "contains-errors",
+			"description": "The entry is known to contain errors or produce invalid results (in cases which it claims to handle)"
 		}
 	},
 	{
 		"model": "community.tag",
 		"pk": 9,
 		"fields": {
-			  "name": "PDE",
-			  "description": "Partial differential equations"
+			"category": 3,
+			"name": "in-development",
+			"description": "The entry is immature, and still needs active development"
+		}
+	},
+	{
+		"model": "community.tag",
+		"pk": 10,
+		"fields": {
+			"category": 3,
+			"name": "mature",
+			"description": "The entry has stayed unchanged for a period of time, and no significant changes are expected"
 		}
 	},
 	{
 		"model": "catalog.license",
 		"pk": 1,
 		"fields": {
-			  "name": "Public domain",
-			  "slug": "public-domain",
-			  "description": "Permission to do anything with the code.",
-			  "text": ""
+			"name": "Public domain",
+			"slug": "public-domain",
+			"description": "Permission to do anything with the code.",
+			"text": ""
 		}
 	},
 	{
