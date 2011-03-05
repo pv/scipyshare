@@ -1,6 +1,6 @@
-# Django settings for scipyard project.
+# Django settings for scipyshare project.
 import os, sys
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'apps'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -77,7 +77,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
 )
 
-ROOT_URLCONF = 'scipyard.urls'
+ROOT_URLCONF = 'deploy.urls'
 
 TEMPLATE_DIRS = (
     os.path.abspath(os.path.join(os.path.dirname(__file__), 'templates')),
@@ -92,12 +92,11 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.admin',
     # Local apps
-    'catalog',
-    'filestorage',
-    'front'
+    'scipyshare.catalog',
+    'scipyshare.filestorage',
+    'scipyshare.community',
+    'scipyshare.front'
 )
-
-
 
 try:
     # Import deployment-specific settings

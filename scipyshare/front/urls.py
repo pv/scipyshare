@@ -1,5 +1,5 @@
 from django.conf.urls.defaults import *
 
-urlpatterns = patterns('front.views',
+urlpatterns = patterns('scipyshare.front.views',
     (r'^$', 'main'),
 )

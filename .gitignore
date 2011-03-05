@@ -4,4 +4,7 @@
 *.bak
 .\#*
 \#*
-/scipyard/test.db
+*.db
+/import
+/deploy/media
+/deploy/import

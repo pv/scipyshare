@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{entry.title}}
+{% endblock %}
+
+{% block content %}
+
+<h1>{{entry.title}} [{{entry.entry_type.name}}]</h1>
+
+<form action="" method="POST">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <input type="submit" value="Modify" />
+</form>
+
+{% endblock %}

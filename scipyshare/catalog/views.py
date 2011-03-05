@@ -3,29 +3,26 @@ from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from django.template import RequestContext
 from django.http import Http404
 
-from catalog.forms import EntryForm
-from catalog.models import Entry, Tag
+from scipyshare.catalog.forms import EntryForm
+from scipyshare.catalog.models import Entry
 
 def view(request, slug):
     entry = get_object_or_404(Entry, slug=slug)
 
+    revision = entry.revisions.all()[0]
+
     fileset = None
     snippet = None
-    if entry.files:
-        snippet = entry.files.snippet
+    if revision.fileset:
+        snippet = revision.fileset.snippet
         if snippet is None:
-            fileset = entry.files
+            fileset = revision.fileset
 
     return render_to_response('catalog/entry.html',
                               dict(entry=entry,
+                                   revision=revision,
                                    snippet=snippet,
                                    fileset=fileset))
-
-def view_tag(request, tag):
-    tag = get_object_or_404(Tag, name=tag)
-    entries = _paginated(request, tag.entries.all())
-    return render_to_response('catalog/tag.html',
-                              dict(tag=tag, entries=entries))
 
 def edit(request, slug):
     entry = get_object_or_404(Entry, slug=slug)

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}{{ tag.name }} [tag]{% endblock %}
+
+{% block content %}
+
+<h1>{{tag.name}} [tag]</h1>
+
+<p>
+{{ tag.description }}
+</p>
+
+{% if tag.entries %}
+<h2>Projects with this tag</h2>
+
+{% include "catalog/entries_list.html" %}
+
+{% endif %}
+
+{% endblock %}
