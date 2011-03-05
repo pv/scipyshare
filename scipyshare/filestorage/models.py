@@ -5,7 +5,7 @@ import shutil
 from django.db import models
 from django.conf import settings
 from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
+from django.core.files.base import ContentFile, File
 
 from django.db.models.signals import pre_delete
 
@@ -15,6 +15,7 @@ class FileSet(models.Model):
 
     """
     name = models.CharField(max_length=256, unique=True)
+    created = models.DateTimeField(auto_now_add=True)
     snippet_contents = models.TextField(null=True)
 
     @classmethod
@@ -22,6 +23,13 @@ class FileSet(models.Model):
         """Generate a suitable slug for the given title --- always guaranteed
         to succeed in giving a new unique name for the file set"""
         name = _sanitize_name(title)
+        kw['name'] = os.path.basename(default_storage.get_available_name(
+            os.path.join('catalog', name)))
+        return cls(**kw)
+
+    @classmethod
+    def new_temporary(cls, **kw):
+        name = "temporary"
         kw['name'] = os.path.basename(default_storage.get_available_name(
             os.path.join('catalog', name)))
         return cls(**kw)
@@ -96,6 +104,15 @@ class FileSet(models.Model):
     def write_readme(self, revision, text):
         self.write_file(revision, 'README.txt',
                         ContentFile(text.encode('utf-8')))
+
+    def copy_to(self, revision, other, other_revision):
+        files = self.listdir(revision)
+        for fn in files:
+            in_f = self.open(revision, other_revision, 'rb')
+            try:
+                other.write_file(other_revision, fn, File(in_f))
+            finally:
+                in_f.close()
 
 def _deletion_handler(sender, **kwargs):
     if 'instance' in kwargs:

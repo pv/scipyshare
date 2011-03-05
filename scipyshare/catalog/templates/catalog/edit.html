@@ -8,10 +8,17 @@
 
 <h1>{{entry.title}} [{{entry.entry_type.name}}]</h1>
 
-<form action="" method="POST">
+{% if preview %}
+{{preview}}
+{% endif %}
+
+<form action="{% url scipyshare.catalog.views.edit_entry entry.slug %}" enctype="multipart/form-data" method="POST">
   {% csrf_token %}
   {{ form.as_p }}
-  <input type="submit" value="Modify" />
+  <input type="submit" name="submit" value="Upload files" />
+  <input type="submit" name="submit" value="Delete selected files" />
+  <hr>
+  <input type="submit" name="submit" value="Preview" />
 </form>
 
 {% endblock %}

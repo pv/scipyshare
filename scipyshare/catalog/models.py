@@ -43,14 +43,25 @@ class Entry(models.Model):
     # Timestamp
     modified = models.DateTimeField(auto_now=True)
 
+    # Just a redirect
+    redirect = models.ForeignKey("Entry", null=True)
+
     # Ownership
     entry_type = models.CharField(max_length=16, choices=ENTRY_TYPE_CHOICES)
     owner = models.ForeignKey(User, related_name="entries", null=True)
+
+    @property
+    def last_revision(self):
+        try:
+            return self.revisions.order_by('-revno')[0]
+        except (KeyError, IndexError):
+            return None
 
     # --
 
     @classmethod
     def new_from_title(cls, title, **kw):
+        title = title.strip()
         slug = generate_slug(title)
         kw['slug'] = slug
         return cls(title=title, **kw)

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}
+New entry
+{% endblock %}
+
+{% block content %}
+
+<h1>New entry</h1>
+
+<form action="{% url scipyshare.catalog.views.new_entry %}" method="POST">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <input type="submit" value="Create entry" />
+</form>
+
+{% endblock %}
