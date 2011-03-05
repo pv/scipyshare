@@ -11,7 +11,7 @@ from django.db.models.signals import pre_delete
 
 class FileSet(models.Model):
     """
-    A set of files, stored in a directory named ``name``.
+    A revisioned set of files, stored in a directory named ``name``.
 
     """
     name = models.CharField(max_length=256, unique=True)
@@ -37,7 +37,7 @@ class FileSet(models.Model):
     snippet = property(_get_snippet, _set_snippet)
 
     def listrev(self):
-        dirs = default_storage.listdir(os.path.dirname(self.path(0, '')))[1]
+        dirs = default_storage.listdir(self._get_base_path())[0]
         revs = []
         for d in dirs:
             try:
@@ -52,7 +52,7 @@ class FileSet(models.Model):
         except OSError:
             return []
 
-    def delete(self, revision, file_name):
+    def delete_file(self, revision, file_name):
         default_storage.delete(self.path(revision, file_name))
 
     def _get_base_path(self):
@@ -67,7 +67,7 @@ class FileSet(models.Model):
                                 file_name)
 
     def _delete_all(self):
-        path = default_storage.path(self.path())
+        path = default_storage.path(self._get_base_path())
         if os.path.isdir(path):
             shutil.rmtree(path)
 
@@ -83,7 +83,7 @@ class FileSet(models.Model):
         if not os.path.isdir(dir_path):
             os.makedirs(dir_path)
 
-        f = self.open(file_name, 'wb')
+        f = self.open(revision, file_name, 'wb')
         try:
             for chunk in content.chunks():
                 f.write(chunk)
