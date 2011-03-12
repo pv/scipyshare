@@ -12,11 +12,7 @@ from scipyshare.filestorage.models import FileSet
 def view(request, slug):
     entry = get_object_or_404(Entry, slug=slug)
 
-    try:
-        revision = entry.revisions.all()[0]
-    except IndexError:
-        revision = None
-
+    revision = entry.last_revision
     fileset = None
     snippet = None
     if revision is not None and revision.fileset:
@@ -64,12 +60,18 @@ def index(request):
 def download(request, slug, file_name):
     entry = get_object_or_404(Entry, slug=slug)
 
-    if not entry.files:
-        raise Http404()
-    if file_name not in entry.files.listdir():
+    revision = entry.last_revision
+    if not revision:
         raise Http404()
 
-    return redirect(entry.files.url(file_name))
+    fileset = revision.fileset
+    if not fileset:
+        raise Http404()
+
+    if file_name not in fileset.listdir():
+        raise Http404()
+
+    return redirect(fileset.url(file_name))
 
 #-------------------------------------------------------------------------------
 # Creating a new entry (with no revisions)
@@ -104,14 +106,14 @@ def new_entry(request):
 #
 # Pages:
 #
-# (1) Filling in revision details, POST to (3)
+# (1) Filling in revision details, POST to (2)
 #     [or back to (1) to upload/delete files]
 #
 # (2) Preview, with submit button, POST to (1) or to (3)
 #
 # (3) Submission finished, redirect to result page.
 #
-# The EntryRevision is created only at step (3).  A temporary FileSet
+# The Revision is created only at step (3).  A temporary FileSet
 # is created in (1), if necessary, and its ID is kept in the session.
 #
 #-------------------------------------------------------------------------------
@@ -244,6 +246,7 @@ def _process_file_uploads(request, entry, files):
     elif entry.entry_type == 'snippet':
         fileset = _get_fileset(request, entry, editable=True)
         fileset.snippet = files[0].read(65536)
+        fileset.save()
     else:
         return []
 
@@ -285,6 +288,7 @@ def _process_entry_submit(request, entry, data):
             if not fileset or not fileset.is_temporary:
                 fileset = _get_fileset(request, entry, editable=True)
             fileset.snippet = data['snippet']
+            fileset.save()
         revision = Revision.new_for_snippet(
             entry=entry,
             change_comment=data['change_comment'],
