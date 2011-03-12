@@ -95,6 +95,7 @@ INSTALLED_APPS = (
     'scipyshare.catalog',
     'scipyshare.filestorage',
     'scipyshare.community',
+    'scipyshare.user',
     'scipyshare.front'
 )
 

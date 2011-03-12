@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}
+Login
+{% endblock %}
+
+{% block body %}
+
+
+{% if user.is_authenticated %}
+XXX: Hi {{user.name}}, you're already logged in.
+{% else %}
+<form action="{% url scipyshare.user.views.login_page %}" method="POST">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <input type="submit" name="submit" value="Login" />
+</form>
+{% endif %}
+
+{% endblock %}
