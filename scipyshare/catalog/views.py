@@ -146,7 +146,7 @@ def _clear_fileset(request, entry):
         fs = FileSet.objects.get(name=sets[entry.slug])
     except (FileSet.DoesNotExist, KeyError, TypeError):
         fs = None
-    if fs is not None:
+    if fs is not None and fs.is_temporary:
         fs.delete()
 
 def edit_entry(request, slug):

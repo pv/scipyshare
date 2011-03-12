@@ -25,7 +25,7 @@ class EditForm(forms.Form):
             self.fields['files'].choices = [(x, x) for x in files]
 
 class PackageForm(EditForm):
-    description = forms.CharField()
+    description = forms.CharField(widget=forms.Textarea())
 
     license = forms.ModelChoiceField(License.objects.all(), empty_label=None)
     author = forms.CharField(max_length=256)
@@ -34,14 +34,14 @@ class PackageForm(EditForm):
     files = forms.MultipleChoiceField(choices=(), required=False)
     upload_file = forms.FileField(required=False)
 
-    change_comment = forms.CharField(required=True)
+    change_comment = forms.CharField(required=True, widget=forms.Textarea())
 
 #
 # Infos
 #
 
 class InfoForm(EditForm):
-    description = forms.CharField()
+    description = forms.CharField(widget=forms.Textarea())
 
     license = forms.ModelChoiceField(License.objects.all(), empty_label=None)
     author = forms.CharField(max_length=256)
@@ -49,15 +49,15 @@ class InfoForm(EditForm):
     url = forms.CharField()
     pypi_name = forms.CharField(max_length=256)
 
-    change_comment = forms.CharField(required=True)
+    change_comment = forms.CharField(required=True, widget=forms.Textarea())
 
 #
 # Snippets
 #
 
 class SnippetForm(EditForm):
-    description = forms.CharField()
-    snippet = forms.CharField(required=False)
+    description = forms.CharField(widget=forms.Textarea())
+    snippet = forms.CharField(required=False, widget=forms.Textarea())
 
     upload_file = forms.FileField(required=False)
-    change_comment = forms.CharField(required=True)
+    change_comment = forms.CharField(required=True, widget=forms.Textarea())
