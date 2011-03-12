@@ -50,6 +50,7 @@ class Entry(models.Model):
     entry_type = models.CharField(max_length=16, choices=ENTRY_TYPE_CHOICES)
     owner = models.ForeignKey(User, related_name="entries", null=True)
 
+
     @property
     def last_revision(self):
         try:
@@ -99,6 +100,58 @@ class Revision(models.Model):
     fileset = models.ForeignKey(FileSet, null=True)
 
     # --
+
+    @classmethod
+    def _get_next_entry_revno(cls, entry):
+        last_revision = entry.last_revision
+        if last_revision is None:
+            return 1
+        else:
+            return last_revision.revno + 1
+
+    @classmethod
+    def new_for_package(cls, entry, created_by, change_comment, description,
+                        license, author, url, fileset):
+        revno = cls._get_next_entry_revno(entry)
+        old_fileset = None
+        if fileset.is_temporary:
+            old_fileset = fileset
+            fileset = FileSet.new_from_slug_and_revision(entry.slug, revno)
+            old_fileset.copy_to(fileset)
+        revision = cls(entry=entry, revno=revno,
+                   created_by=created_by, change_comment=change_comment,
+                   description=description, license=license, author=author,
+                   url=url)
+        if old_fileset is not None:
+            fileset.save()
+        revision.fileset = fileset
+        return revision
+
+    @classmethod
+    def new_for_info(cls, entry, created_by, change_comment, description,
+                     license, author, url, pypi_name):
+        revno = cls._get_next_entry_revno(entry)
+        return cls(entry=entry, revno=revno,
+                   created_by=created_by, change_comment=change_comment,
+                   description=description, license=license, author=author,
+                   url=url, pypi_name=pypi_name)
+
+    @classmethod
+    def new_for_snippet(cls, entry, created_by, change_comment, description,
+                        fileset):
+        revno = cls._get_next_entry_revno(entry)
+        old_fileset = None
+        if fileset.is_temporary:
+            old_fileset = fileset
+            fileset = FileSet.new_from_slug_and_revision(entry.slug, revno)
+            fileset.snippet = old_fileset.snippet
+        revision = cls(entry=entry, revno=revno,
+                       created_by=created_by, change_comment=change_comment,
+                       description=description)
+        if old_fileset is not None:
+            fileset.save()
+        revision.fileset = fileset
+        return revision
 
     def __str__(self):
         return "%s:%d" % (self.entry.slug, self.revno)

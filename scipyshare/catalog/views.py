@@ -12,11 +12,14 @@ from scipyshare.filestorage.models import FileSet
 def view(request, slug):
     entry = get_object_or_404(Entry, slug=slug)
 
-    revision = entry.revisions.all()[0]
+    try:
+        revision = entry.revisions.all()[0]
+    except IndexError:
+        revision = None
 
     fileset = None
     snippet = None
-    if revision.fileset:
+    if revision is not None and revision.fileset:
         snippet = revision.fileset.snippet
         if snippet is None:
             fileset = revision.fileset
@@ -80,7 +83,7 @@ def new_entry(request):
                 data = form.cleaned_data
                 entry = Entry.new_from_title(title=data['title'],
                                              entry_type=data['entry_type'],
-                                             #owner=request.user
+                                             owner=request.user
                                              )
                 if entry.slug == 'new':
                     raise IntegrityError()
@@ -113,61 +116,169 @@ def new_entry(request):
 #
 #-------------------------------------------------------------------------------
 
+def _get_fileset(request, entry, editable=False):
+    sets = request.session.get('fileset')
+    try:
+        return FileSet.objects.get(name=sets[entry.slug])
+    except (FileSet.DoesNotExist, KeyError, TypeError):
+        pass
+
+    last_revision = entry.last_revision
+    if not editable:
+        if last_revision is not None:
+            return last_revision.fileset
+        else:
+            return None
+
+    fs = FileSet.new_temporary()
+    fs.save()
+    request.session['fileset'] = {entry.slug: fs.name}
+    if last_revision is not None and last_revision.fileset is not None:
+        last_revision.fileset.copy_to(fs)
+
+    return fs
+
+def _clear_fileset(request, entry):
+    sets = request.session.get('fileset')
+    try:
+        fs = FileSet.objects.get(name=sets[entry.slug])
+    except (FileSet.DoesNotExist, KeyError, TypeError):
+        fs = None
+    if fs is not None:
+        fs.delete()
+
 def edit_entry(request, slug):
     entry = get_object_or_404(Entry, slug=slug)
 
-    def _get_fileset(editable=False):
-        sets = request.session.get('fileset')
-        try:
-            return FileSet(name=sets[slug])
-        except (FileSet.DoesNotExist, KeyError, TypeError):
-            pass
-
-        last_revision = entry.last_revision
-        if not editable:
-            if last_revision is not None:
-                return last_revision.fileset
-            else:
-                return None
-
-        fs = FileSet.new_temporary()
-        request.session['fileset'] = {slug: fs.name}
-
-        if last_revision is not None:
-            last_revision.copy_to(fs)
-
-        return fs
+    if request.method == 'GET':
+        _clear_fileset(request, entry)
 
     form_cls = dict(package=PackageForm,
                     snippet=SnippetForm,
                     info=InfoForm)[entry.entry_type]
 
-    fileset = _get_fileset()
+    fileset = _get_fileset(request, entry)
     if fileset:
         files = fileset.listdir()
     else:
         files = []
+
+    show_submit = False
+    use_uploads = (entry.entry_type == 'package')
 
     if request.method == 'POST':
         form = form_cls(request.POST, request.FILES, files=files)
 
         action = {u'Upload files': 'upload',
                   u'Delete selected files': 'delete',
-                  u'Preview': 'preview'}.get(request.POST.get('submit'), None)
+                  u'Preview': 'preview',
+                  u'Edit': 'edit',
+                  u'Submit': 'submit'}.get(request.POST.get('submit'), None)
+
+        if use_uploads and fileset is None:
+            form.errors['upload_file'] = [u'No files uploaded']
 
         if action == 'preview' and form.is_valid():
-            pass
-        elif action == 'delete':
+            files = _process_file_uploads(request, entry,
+                                          request.FILES.getlist('upload_file'))
+            show_submit = True
+        elif action == 'submit' and form.is_valid():
+            _process_entry_submit(request, entry, form.cleaned_data)
+            return redirect(view, entry.slug)
+        elif use_uploads and action == 'upload':
+            files = _process_file_uploads(request, entry,
+                                          request.FILES.getlist('upload_file'))
+            form.set_files(files)
             form.errors.clear()
-
-
-            pass
-        elif action == 'upload':
+        elif use_uploads and action == 'delete':
+            files = _process_file_deletes(request, entry,
+                                          form.data.getlist('files'))
+            form.set_files(files)
             form.errors.clear()
-            pass
     else:
-        form = form_cls(files=files)
+        data = _get_entry_data(entry)
+        form = form_cls(initial=data, files=files)
 
     return render_to_response('catalog/edit.html',
-                              dict(entry=entry, form=form),
+                              dict(entry=entry, form=form,
+                                   show_upload=use_uploads,
+                                   show_submit=show_submit),
                               context_instance=RequestContext(request))
+
+def _get_entry_data(entry):
+    revision = entry.last_revision
+    if not revision:
+        return dict()
+
+    if entry.entry_type == 'package':
+        return dict(description=revision.description,
+                    license=revision.license,
+                    author=revision.author,
+                    url=revision.url)
+    elif entry.entry_type == 'info':
+        return dict(description=revision.description,
+                    license=revision.license,
+                    author=revision.author,
+                    url=revision.url,
+                    pypi_name=revision.pypi_name)
+    elif entry.entry_type == 'snippet':
+        if revision.fileset:
+            snippet = revision.fileset.snippet
+        else:
+            snippet = u""
+        return dict(description=revision.description,
+                    snippet=snippet)
+
+def _process_file_uploads(request, entry, files):
+    if not files:
+        fileset = _get_fileset(request, entry)
+        return fileset.listdir()
+
+    fileset = _get_fileset(request, entry, editable=True)
+    for f in files:
+        fileset.write_file(f.name, f)
+    return fileset.listdir()
+
+def _process_file_deletes(request, entry, files_to_remove):
+    fileset = _get_fileset(request, entry, editable=True)
+    files = fileset.listdir()
+    for fn in files:
+        if fn in files_to_remove:
+            fileset.delete_file(fn)
+    return fileset.listdir()
+
+def _process_entry_submit(request, entry, data):
+    fileset = _get_fileset(request, entry)
+
+    if entry.entry_type == 'package':
+        revision = Revision.new_for_package(
+            entry=entry,
+            change_comment=data['change_comment'],
+            created_by=request.user,
+            description=data['description'],
+            license=data['license'],
+            author=data['author'],
+            url=data['url'],
+            fileset=fileset)
+    elif entry.entry_type == 'info':
+        revision = Revision.new_for_info(
+            entry=entry,
+            change_comment=data['change_comment'],
+            created_by=request.user,
+            description=data['description'],
+            license=data['license'],
+            author=data['author'],
+            url=data['url'],
+            pypi_name=data['pypi_name'])
+    elif entry.entry_type == 'snippet':
+        revision = Revision.new_for_snippet(
+            entry=entry,
+            change_comment=data['change_comment'],
+            created_by=request.user,
+            description=data['description'],
+            snippet=data['snippet'])
+    else:
+        raise ValueError("unknown entry type %r" % entry.entry_type)
+
+    revision.save()
+    _clear_fileset(request, entry)
