@@ -6,7 +6,7 @@ from django.db import IntegrityError
 
 from scipyshare.catalog.forms import EntryForm, PackageForm, InfoForm, \
      SnippetForm
-from scipyshare.catalog.models import Entry, Revision
+from scipyshare.catalog.models import Entry, Revision, License
 from scipyshare.filestorage.models import FileSet
 
 def view(request, slug):
@@ -232,11 +232,21 @@ def _get_entry_data(entry):
 def _process_file_uploads(request, entry, files):
     if not files:
         fileset = _get_fileset(request, entry)
-        return fileset.listdir()
+        if fileset:
+            return fileset.listdir()
+        else:
+            return []
 
-    fileset = _get_fileset(request, entry, editable=True)
-    for f in files:
-        fileset.write_file(f.name, f)
+    if entry.entry_type == 'package':
+        fileset = _get_fileset(request, entry, editable=True)
+        for f in files:
+            fileset.write_file(f.name, f)
+    elif entry.entry_type == 'snippet':
+        fileset = _get_fileset(request, entry, editable=True)
+        fileset.snippet = files[0].read(65536)
+    else:
+        return []
+
     return fileset.listdir()
 
 def _process_file_deletes(request, entry, files_to_remove):
@@ -271,12 +281,18 @@ def _process_entry_submit(request, entry, data):
             url=data['url'],
             pypi_name=data['pypi_name'])
     elif entry.entry_type == 'snippet':
+        if data['snippet']:
+            if not fileset or not fileset.is_temporary:
+                fileset = _get_fileset(request, entry, editable=True)
+            fileset.snippet = data['snippet']
         revision = Revision.new_for_snippet(
             entry=entry,
             change_comment=data['change_comment'],
             created_by=request.user,
             description=data['description'],
-            snippet=data['snippet'])
+            fileset=fileset,
+            license=License.objects.get(slug='public-domain')
+            )
     else:
         raise ValueError("unknown entry type %r" % entry.entry_type)
 

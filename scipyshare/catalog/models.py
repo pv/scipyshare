@@ -138,7 +138,7 @@ class Revision(models.Model):
 
     @classmethod
     def new_for_snippet(cls, entry, created_by, change_comment, description,
-                        fileset):
+                        license, fileset):
         revno = cls._get_next_entry_revno(entry)
         old_fileset = None
         if fileset.is_temporary:
@@ -147,7 +147,7 @@ class Revision(models.Model):
             fileset.snippet = old_fileset.snippet
         revision = cls(entry=entry, revno=revno,
                        created_by=created_by, change_comment=change_comment,
-                       description=description)
+                       description=description, license=license)
         if old_fileset is not None:
             fileset.save()
         revision.fileset = fileset

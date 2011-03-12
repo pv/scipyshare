@@ -21,7 +21,8 @@ class EditForm(forms.Form):
         self.set_files(files)
 
     def set_files(self, files):
-        self.fields['files'].choices = [(x, x) for x in files]
+        if 'files' in self.fields:
+            self.fields['files'].choices = [(x, x) for x in files]
 
 class PackageForm(EditForm):
     description = forms.CharField()
@@ -56,7 +57,7 @@ class InfoForm(EditForm):
 
 class SnippetForm(EditForm):
     description = forms.CharField()
-    snippet = forms.CharField()
+    snippet = forms.CharField(required=False)
 
-    upload_file = forms.FileField()
+    upload_file = forms.FileField(required=False)
     change_comment = forms.CharField(required=True)
