@@ -8,6 +8,12 @@ from scipyshare.catalog.forms import EntryForm, PackageForm, InfoForm, \
      SnippetForm
 from scipyshare.catalog.models import Entry, Revision, License
 from scipyshare.filestorage.models import FileSet
+from scipyshare.community import permissions
+
+
+#-------------------------------------------------------------------------------
+# Viewing entries
+#-------------------------------------------------------------------------------
 
 def view(request, slug):
     entry = get_object_or_404(Entry, slug=slug)
@@ -25,22 +31,6 @@ def view(request, slug):
                                    revision=revision,
                                    snippet=snippet,
                                    fileset=fileset))
-
-def edit(request, slug):
-    entry = get_object_or_404(Entry, slug=slug)
-
-    if request.method == "POST":
-        form = EntryForm(request.POST, instance=entry)
-        if form.is_valid():
-            form.save()
-            return redirect(view, slug=entry.slug)
-    else:
-        form = EntryForm(instance=entry)
-
-    return render_to_response('catalog/edit.html',
-                              dict(entry=entry, form=form),
-                              context_instance=RequestContext(request)
-                              )
 
 def _paginated(request, queryset):
     paginator = Paginator(queryset, 100)
@@ -73,11 +63,14 @@ def download(request, slug, file_name):
 
     return redirect(fileset.url(file_name))
 
+
 #-------------------------------------------------------------------------------
 # Creating a new entry (with no revisions)
 #-------------------------------------------------------------------------------
 
 def new_entry(request):
+    permissions.require_can_create_entry(request.user)
+
     if request.method == 'POST':
         form = EntryForm(request.POST)
         if form.is_valid():
@@ -101,6 +94,7 @@ def new_entry(request):
                               dict(form=form),
                               context_instance=RequestContext(request))
 
+
 #-------------------------------------------------------------------------------
 # Creating a new revision:
 #
@@ -118,39 +112,10 @@ def new_entry(request):
 #
 #-------------------------------------------------------------------------------
 
-def _get_fileset(request, entry, editable=False):
-    sets = request.session.get('fileset')
-    try:
-        return FileSet.objects.get(name=sets[entry.slug])
-    except (FileSet.DoesNotExist, KeyError, TypeError):
-        pass
-
-    last_revision = entry.last_revision
-    if not editable:
-        if last_revision is not None:
-            return last_revision.fileset
-        else:
-            return None
-
-    fs = FileSet.new_temporary()
-    fs.save()
-    request.session['fileset'] = {entry.slug: fs.name}
-    if last_revision is not None and last_revision.fileset is not None:
-        last_revision.fileset.copy_to(fs)
-
-    return fs
-
-def _clear_fileset(request, entry):
-    sets = request.session.get('fileset')
-    try:
-        fs = FileSet.objects.get(name=sets[entry.slug])
-    except (FileSet.DoesNotExist, KeyError, TypeError):
-        fs = None
-    if fs is not None and fs.is_temporary:
-        fs.delete()
-
 def edit_entry(request, slug):
     entry = get_object_or_404(Entry, slug=slug)
+
+    permissions.require_can_edit_entry(request.user, entry)
 
     if request.method == 'GET':
         _clear_fileset(request, entry)
@@ -206,6 +171,37 @@ def edit_entry(request, slug):
                                    show_upload=use_uploads,
                                    show_submit=show_submit),
                               context_instance=RequestContext(request))
+
+def _get_fileset(request, entry, editable=False):
+    sets = request.session.get('fileset')
+    try:
+        return FileSet.objects.get(name=sets[entry.slug])
+    except (FileSet.DoesNotExist, KeyError, TypeError):
+        pass
+
+    last_revision = entry.last_revision
+    if not editable:
+        if last_revision is not None:
+            return last_revision.fileset
+        else:
+            return None
+
+    fs = FileSet.new_temporary()
+    fs.save()
+    request.session['fileset'] = {entry.slug: fs.name}
+    if last_revision is not None and last_revision.fileset is not None:
+        last_revision.fileset.copy_to(fs)
+
+    return fs
+
+def _clear_fileset(request, entry):
+    sets = request.session.get('fileset')
+    try:
+        fs = FileSet.objects.get(name=sets[entry.slug])
+    except (FileSet.DoesNotExist, KeyError, TypeError):
+        fs = None
+    if fs is not None and fs.is_temporary:
+        fs.delete()
 
 def _get_entry_data(entry):
     revision = entry.last_revision
