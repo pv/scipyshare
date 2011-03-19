@@ -1,4 +1,5 @@
 from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext
 
@@ -16,7 +17,7 @@ def login_page(request):
                 if user.is_active:
                     login(request, user)
                     if not next:
-                        next = login_page
+                        next = profile_page
                     return redirect(next)
                 else:
                     form.errors['__all__'] = 'This account is disabled.'
@@ -28,6 +29,13 @@ def login_page(request):
 
     return render_to_response('user/login.html',
                               dict(form=form, user=request.user, next=next),
+                              context_instance=RequestContext(request)
+                              )
+
+@login_required
+def profile_page(request):
+    return render_to_response('user/profile.html',
+                              dict(user=request.user),
                               context_instance=RequestContext(request)
                               )
 

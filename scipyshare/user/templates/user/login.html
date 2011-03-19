@@ -6,24 +6,13 @@ Login
 
 {% block body %}
 
-
-{% if user.is_authenticated %}
-XXX: Hi {{user.name}}, you're already logged in.
-
-<form action="{% url scipyshare.user.views.logout_page %}" method="POST">
-  {% csrf_token %}
-  <input type="submit" name="submit" value="Logout" />
-</form>
-
-{% else %}
 <form action="{% url scipyshare.user.views.login_page %}" method="POST">
   {% csrf_token %}
   {{ form.as_p }}
 {% if next %}
-  <input type="hidden" name="next" value="{{next}}" />
+  <input type="hidden" name="next" value="{{ next }}" />
 {% endif %}
   <input type="submit" name="submit" value="Login" />
 </form>
-{% endif %}
 
 {% endblock %}
