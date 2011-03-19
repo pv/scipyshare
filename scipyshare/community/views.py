@@ -3,13 +3,28 @@ from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from django.template import RequestContext
 from django.http import Http404
 
-from scipyshare.community.models import Tag
+from scipyshare.community.models import Tag, TagCache
+from scipyshare.catalog.models import Entry
 
 def view_tag(request, tag):
     tag = get_object_or_404(Tag, name=tag)
-    entries = _paginated(request, tag.entries.all())
+    entries = Entry.objects.filter(tags__tag=tag)
+    entries = _paginated(request, entries)
     return render_to_response('community/tag.html',
                               dict(tag=tag, entries=entries))
+
+def assign_tags(request, slug):
+    entry = get_object_or_404(Entry, slug=slug)
+
+    if request.method == 'POST':
+        pass
+    else:
+        tags = entry.tags.all()
+
+    return render_to_response('community/tag_assign.html',
+                              dict(entry=entry, tags=tags),
+                              context_instance=RequestContext(request)
+                              )
 
 def _paginated(request, queryset):
     paginator = Paginator(queryset, 100)

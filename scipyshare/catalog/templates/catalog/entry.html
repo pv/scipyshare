@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load community %}
 
 {% block title %}
 {{entry.title}}
@@ -27,9 +28,7 @@
 
 <dt>Tags</dt>
 <dd>
-{% for tag in entry.tags.all %}
-<a href="{% url scipyshare.community.views.view_tag tag.name %}" title="{{tag.description|truncatewords:10}}">{{tag.name}}</a>{% if not forloop.last %}, {% endif %}
-{% endfor %}
+{% tag_list entry %}
 </dd>
 
 {% if revision.url %}

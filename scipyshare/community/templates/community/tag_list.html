@@ -1,0 +1,7 @@
+{% for x in tags %}
+{% if x.score > 0 %}
+<span class='tag'><a href="{% url scipyshare.community.views.view_tag x.tag.name %}">{{ x.tag.name }}</a></span>
+{% else %}
+<span class='tag-hidden'><a href="{% url scipyshare.community.views.view_tag x.tag.name %}">{{ x.tag.name }}</a></span>
+{% endif %}
+{% endfor %}

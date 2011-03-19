@@ -29,8 +29,7 @@
 		"fields": {
 			"category": 1,
 			"name": "optimization",
-			"description": "For minimizing and maximizing something",
-			"entries": [1]
+			"description": "For minimizing and maximizing something"
 		}
 	},
 	{

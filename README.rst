@@ -100,6 +100,20 @@ provide support for:
   Each entry gets a comments section. The comments should 'remember'
   which revision of the entry they refer to (if not current).
 
+Tagging
+-------
+
+Tags are classified in tag categories.
+
+Tag categories are managed by Editors only.
+
+New tags can be created by all users, and edited by Editors.
+
+Tag assignments can be made by all users. They are per-user, so each
+user can have a different tag assignment for an entry.
+
+
+
 
 Code Layout
 ===========

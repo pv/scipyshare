@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% load community %}
+
+{% block title %}Assign tags for {{ entry.title }}{% endblock %}
+
+{% block content %}
+
+<h1>Tags for "{{ entry.title }}"</h1>
+
+<ul>
+{% for x in tags %}
+<li>{{ x.tag.name }}</li>
+{% endfor %}
+</ul>
+
+{% endblock %}
