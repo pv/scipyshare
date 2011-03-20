@@ -19,7 +19,12 @@ def can_edit_entry(user, entry):
 
 require_can_edit_entry = _as_require(can_edit_entry)
 
-def can_create_entry(user, entry):
-    return user.is_authenticated
+def can_create_entry(user):
+    return user.is_authenticated()
 
 require_can_create_entry = _as_require(can_create_entry)
+
+def can_tag_entry(user, entry):
+    return user.is_authenticated()
+
+require_can_tag_entry = _as_require(can_tag_entry)
