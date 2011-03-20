@@ -2,8 +2,15 @@ import re
 
 from django.db import models, transaction
 from django.contrib.auth.models import User
+from django.contrib.comments.signals import comment_will_be_posted
 
 from scipyshare.catalog.models import Entry
+from scipyshare.community import permissions
+
+
+#------------------------------------------------------------------------------
+# Tags
+#------------------------------------------------------------------------------
 
 class TagCategory(models.Model):
     class Meta:
@@ -92,3 +99,16 @@ class TagCache(models.Model):
         TagCache.objects.all().delete()
         for entry in Entry.objects.all():
             cls._recompute_one(entry)
+
+
+#------------------------------------------------------------------------------
+# Comments
+#------------------------------------------------------------------------------
+
+def _comment_pre_save(sender, comment, request, **kw):
+    if not permissions.can_comment(request.user):
+        return False
+    comment.user = request.user
+    return True
+
+comment_will_be_posted.connect(_comment_pre_save)

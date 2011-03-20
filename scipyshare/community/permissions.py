@@ -28,3 +28,8 @@ def can_tag_entry(user, entry):
     return user.is_authenticated()
 
 require_can_tag_entry = _as_require(can_tag_entry)
+
+def can_comment(user):
+    return user.is_authenticated()
+
+require_can_comment = _as_require(can_comment)

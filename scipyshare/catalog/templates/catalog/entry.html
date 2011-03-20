@@ -1,5 +1,7 @@
 {% extends "base.html" %}
+
 {% load community %}
+{% load comments %}
 
 {% block title %}
 {{entry.title}}
@@ -71,5 +73,46 @@ TODO
 <a href="{% url scipyshare.catalog.views.download entry.slug "snippet.py" %}">[raw]</a>
 <pre>{{ snippet }}</pre>
 {% endif %}
+
+<div class="comments">
+<h2>Comments</h2>
+
+{% render_comment_list for entry %}
+
+{% ifperm can_comment %}
+{% get_comment_form for entry as form %}
+<table>
+<form action="{% comment_form_target %}" method="post">
+  {% csrf_token %}
+  {% for field in form %}
+  {% ifequal field.name "email" %}
+  {% else %}
+  {% ifequal field.name "name" %}
+  {% else %}
+  {% ifequal field.name "url" %}
+  {% else %}
+  {% ifequal field.name "honeypot" %}
+  <p style="display:none;">{{ field.label_tag }}: {{ field }}</p>
+  {% else %}
+  {% if field.is_hidden %}
+  <span style="display:none;">{{ field }}</span>
+  {% else %}
+  <p>{{ field.label_tag }}: {{ field }}</p>
+  {% endif %}
+  {% endifequal %}
+  {% endifequal %}
+  {% endifequal %}
+  {% endifequal %}
+  {% endfor %}
+  <input type="hidden" name="next" value="{% url scipyshare.catalog.views.view entry.slug %}">
+  <tr>
+    <td></td>
+    <td><input type="submit" name="preview" class="submit-post" value="Preview"></td>
+  </tr>
+</form>
+</table>
+{% endifperm %}
+
+</div>
 
 {% endblock %}

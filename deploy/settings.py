@@ -93,6 +93,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.admin',
+    'django.contrib.comments',
     # Local apps
     'scipyshare.catalog',
     'scipyshare.filestorage',
@@ -100,6 +101,8 @@ INSTALLED_APPS = (
     'scipyshare.user',
     'scipyshare.front'
 )
+
+COMMENTS_APP = "scipyshare.community"
 
 try:
     # Import deployment-specific settings
