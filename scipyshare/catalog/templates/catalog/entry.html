@@ -9,6 +9,13 @@
 
 <h1>{{entry.title}} [{{entry.entry_type}}]</h1>
 
+{% ifperm can_edit_entry entry %}
+<a href="{% url scipyshare.catalog.views.edit_entry entry.slug %}">Edit entry</a>
+{% endifperm %}
+{% ifperm can_tag_entry entry %}
+<a href="{% url scipyshare.community.views.assign_tags entry.slug %}">Edit tags</a>
+{% endifperm %}
+
 <dl>
 
 <dt>Description</dt>

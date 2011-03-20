@@ -2,16 +2,43 @@
 
 {% load community %}
 
-{% block title %}Assign tags for {{ entry.title }}{% endblock %}
+{% block title %}Tags for {{ entry.title }}{% endblock %}
 
 {% block content %}
 
 <h1>Tags for "{{ entry.title }}"</h1>
 
+<form action="{% url scipyshare.community.views.assign_tags entry.slug %}" method="POST">
+{% csrf_token %}
+<p>
+  Choose suitable tags from the lists below, and click "Assign tags" when done.
+</p>
+<input type="submit" value="Assign tags">
+<div class="tag-assignment">
+{% for cat in tag_list %}
+<div class="tag-category">
+<h2>{{ cat.name }}</h2>
+<p>{{ cat.description }}</p>
 <ul>
-{% for x in tags %}
-<li>{{ x.tag.name }}</li>
+{% for tag in cat.tags %}
+{% if tag.your_pos %}
+<li><input type="checkbox" class="tag tag-your-pos" value="1" name="tag-{{ tag.name }}" checked="yes">{{ tag.name }}</input></li>
+{% else %}
+{% if tag.your_neg %}
+<li><input type="checkbox" class="tag tag-your-neg" value="1" name="tag-{{ tag.name }}">{{ tag.name }}</input></li>
+{% else %}
+{% if tag.shadow %}
+<li><input type="checkbox" class="tag tag-other-pos" value="1" name="tag-{{ tag.name }}" checked="yes">{{ tag.name }}</input></li>
+{% else %}
+<li><input type="checkbox" class="tag tag-other" value="1" name="tag-{{ tag.name }}">{{ tag.name }}</input></li>
+{% endif %}
+{% endif %}
+{% endif %}
 {% endfor %}
 </ul>
+</div>
+</div>
+{% endfor %}
+</form>
 
 {% endblock %}

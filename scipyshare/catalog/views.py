@@ -3,6 +3,7 @@ from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from django.template import RequestContext
 from django.http import Http404
 from django.db import IntegrityError
+from django.contrib import messages
 
 from scipyshare.catalog.forms import EntryForm, PackageForm, InfoForm, \
      SnippetForm
@@ -30,7 +31,8 @@ def view(request, slug):
                               dict(entry=entry,
                                    revision=revision,
                                    snippet=snippet,
-                                   fileset=fileset))
+                                   fileset=fileset),
+                              context_instance=RequestContext(request))
 
 def _paginated(request, queryset):
     paginator = Paginator(queryset, 100)
@@ -151,7 +153,11 @@ def edit_entry(request, slug):
             show_submit = True
         elif action == 'submit' and form.is_valid():
             _process_entry_submit(request, entry, form.cleaned_data)
-            return redirect(view, entry.slug)
+
+            messages.add_message(request, messages.INFO,
+                                 'Please consider assigning tags for "%s".'
+                                 % entry.title)
+            return redirect('scipyshare.community.views.assign_tags', slug)
         elif use_uploads and action == 'upload':
             files = _process_file_uploads(request, entry,
                                           request.FILES.getlist('upload_file'))

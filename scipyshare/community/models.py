@@ -6,6 +6,9 @@ from django.contrib.auth.models import User
 from scipyshare.catalog.models import Entry
 
 class TagCategory(models.Model):
+    class Meta:
+        ordering = ("name",)
+
     name = models.CharField(max_length=128, unique=True)
     description = models.TextField()
 
@@ -14,10 +17,13 @@ class Tag(models.Model):
     Free-form tags and trove classifiers
     """
 
+    class Meta:
+        ordering = ("name",)
+
     name = models.SlugField(unique=True,
                             help_text="name *and* slug for the tag")
     description = models.TextField(help_text="description for the tag")
-    category = models.ForeignKey(TagCategory)
+    category = models.ForeignKey(TagCategory, related_name="tags")
 
     # --
 
@@ -36,8 +42,20 @@ class TagAssignment(models.Model):
     entry = models.ForeignKey(Entry, related_name="tag_assignments")
     user = models.ForeignKey(User, related_name="tag_assignments")
 
-    comment = models.TextField()
     score = models.FloatField()
+
+    #--
+
+    @classmethod
+    @transaction.commit_on_success
+    def assign_tags(cls, user, entry, tags_to_score):
+        TagAssignment.objects.filter(user=user, entry=entry).delete()
+        for tag_name, score in tags_to_score.iteritems():
+            tag = Tag.objects.get(name=tag_name)
+            x = TagAssignment(tag=tag, entry=entry, user=user, score=score)
+            x.save()
+
+        TagCache.recompute(entry)
 
 class TagCache(models.Model):
     class Meta:
@@ -56,10 +74,11 @@ class TagCache(models.Model):
     def _recompute_one(cls, entry):
         assignments = TagAssignment.objects.filter(entry=entry).values('tag', 'entry').annotate(models.Sum('score'))
         for x in assignments:
-            cache = TagCache(tag=Tag.objects.get(id=x['tag']),
-                             entry=entry,
-                             score=x['score__sum'])
-            cache.save()
+            if x['score__sum'] > 0:
+                cache = TagCache(tag=Tag.objects.get(id=x['tag']),
+                                 entry=entry,
+                                 score=x['score__sum'])
+                cache.save()
 
     @classmethod
     @transaction.commit_on_success
