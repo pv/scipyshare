@@ -86,12 +86,12 @@ class Revision(models.Model):
 
     # When, by who, and why
     created = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(User, related_name="revisions")
+    created_by = models.ForeignKey(User, null=True, related_name="revisions")
     change_comment = models.TextField()
 
     # Basic information
     description = models.TextField()
-    license = models.ForeignKey(License)
+    license = models.ForeignKey(License, null=True)
     author = models.CharField(max_length=256)  # Name <email>
 
     # Source links (home page, PyPi, hosted files)

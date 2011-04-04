@@ -28,4 +28,3 @@ def get_release_list():
 def get_info(package_name, version):
     client = xmlrpclib.ServerProxy(PYPI_XML_URL)
     return client.release_data(package_name, version)
-
