@@ -99,7 +99,8 @@ INSTALLED_APPS = (
     'scipyshare.filestorage',
     'scipyshare.community',
     'scipyshare.user',
-    'scipyshare.front'
+    'scipyshare.front',
+    'scipyshare.importing',
 )
 
 COMMENTS_APP = "scipyshare.community"
