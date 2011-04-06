@@ -4,6 +4,7 @@ from django.db import models, transaction
 from django.db import IntegrityError
 
 from scipyshare.catalog.models import Entry, Revision
+from scipyshare.community.models import Tag, TagAssignment
 from scipyshare.importing import pypi
 from scipyshare.importing.classifiers import classifiers
 
@@ -135,6 +136,7 @@ class PypiLink(models.Model):
         if pypi.home_page:
             new_url = pypi.home_page
 
+        # Update revision
         revision = entry.last_revision
         if revision is None or revision.created_by is not None:
             # need to create a new revision
@@ -150,6 +152,21 @@ class PypiLink(models.Model):
             revision.pypi_name = pypi_name
             revision.created = datetime.datetime.now()
         revision.save()
+
+        # Get tags from classifiers
+        tags = {}
+        for x in pypi.classifiers.split("\n"):
+            x = x.strip()
+            tagname = classifiers.get(x)
+            if not tagname:
+                continue
+            try:
+                tag = Tag.objects.get(name=tagname)
+                tags[tagname] = 1.0
+            except Tag.DoesNotExist:
+                pass
+        TagAssignment.assign_tags(user=None, entry=entry, tags_to_score=tags)
+
 
     @classmethod
     def update_all(cls, display=False, force=False):

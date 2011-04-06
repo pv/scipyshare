@@ -1,7 +1,7 @@
 import re
 
 from django.db import models, transaction
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.contrib.comments.signals import comment_will_be_posted
 
 from scipyshare.catalog.models import Entry
@@ -18,6 +18,13 @@ class TagCategory(models.Model):
 
     name = models.CharField(max_length=128, unique=True)
     description = models.TextField()
+    editable_by = models.ForeignKey(
+        Group, null=True, help_text="new tags can be added by groups")
+
+    # --
+
+    def __str__(self):
+        return self.name
 
 class Tag(models.Model):
     """
@@ -47,7 +54,7 @@ class TagAssignment(models.Model):
 
     tag = models.ForeignKey(Tag, related_name="tag_assignments")
     entry = models.ForeignKey(Entry, related_name="tag_assignments")
-    user = models.ForeignKey(User, related_name="tag_assignments")
+    user = models.ForeignKey(User, null=True, related_name="tag_assignments")
 
     score = models.FloatField()
 

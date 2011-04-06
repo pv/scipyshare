@@ -1,126 +1,11 @@
 [
 	{
-		"model": "community.tagcategory",
-		"pk": 1,
-		"fields": {
-			"name": "Topic",
-			"description": "Topic of the entry"
-                }
-	},
-	{
-		"model": "community.tagcategory",
-		"pk": 2,
-		"fields": {
-			"name": "Quality",
-			"description": "Quality of the entry"
-		}
-	},
-	{
-		"model": "community.tagcategory",
-		"pk": 3,
-		"fields": {
-			"name": "Maturity",
-			"description": "Maturity of the software"
-		}
-	},
-	{
-		"model": "community.tag",
-		"pk": 1,
-		"fields": {
-			"category": 1,
-			"name": "optimization",
-			"description": "For minimizing and maximizing something"
-		}
-	},
-	{
-		"model": "community.tag",
-		"pk": 2,
-		"fields": {
-			"category": 1,
-			"name": "spatial",
-			"description": "For handling spatial data"
-		}
-	},
-	{
-		"model": "community.tag",
-		"pk": 3,
-		"fields": {
-			"category": 1,
-			"name": "interpolation",
-			"description": "For interpolating data"
-		}
-	},
-	{
-		"model": "community.tag",
-		"pk": 4,
-		"fields": {
-			"category": 1,
-			"name": "machine learning",
-			"description": "Machine learning"
-		}
-	},
-	{
-		"model": "community.tag",
-		"pk": 5,
-		"fields": {
-			"category": 1,
-			"name": "dynamical systems",
-			"description": "Dynamical systems (ODEs etc.)"
-		}
-	},
-	{
-		"model": "community.tag",
-		"pk": 6,
-		"fields": {
-			"category": 1,
-			"name": "PDE",
-			"description": "Partial differential equations"
-		}
-	},
-	{
-		"model": "community.tag",
-		"pk": 7,
-		"fields": {
-			"category": 2,
-			"name": "reliable",
-			"description": "Results from this entry have been verified extensively independently and found valid"
-		}
-	},
-	{
-		"model": "community.tag",
-		"pk": 8,
-		"fields": {
-			"category": 2,
-			"name": "contains-errors",
-			"description": "The entry is known to contain errors or produce invalid results (in cases which it claims to handle)"
-		}
-	},
-	{
-		"model": "community.tag",
-		"pk": 9,
-		"fields": {
-			"category": 3,
-			"name": "in-development",
-			"description": "The entry is immature, and still needs active development"
-		}
-	},
-	{
-		"model": "community.tag",
-		"pk": 10,
-		"fields": {
-			"category": 3,
-			"name": "mature",
-			"description": "The entry has stayed unchanged for a period of time, and no significant changes are expected"
-		}
-	},
-	{
 		"model": "catalog.license",
 		"pk": 1,
 		"fields": {
 			"name": "Public domain",
 			"slug": "public-domain",
-			"description": "Permission to do anything with the code.",
-			"text": ""
+			"description": "Permission to do anything with the code."
 		}
 	},
 	{
@@ -129,8 +14,7 @@
 		"fields": {
 			  "name": "New BSD license",
 			  "slug": "bsd",
-			  "description": "BSD license grants the recipient the right to use the code for any purpose, as long as the original author is acknowledged.",
-			  "text": "Copyright (c) <year>, <copyright holder>\nAll rights reserved.\n\nRedistribution and use in source and binary forms, with or without\nmodification, are permitted provided that the following conditions are met:\n    * Redistributions of source code must retain the above copyright\n      notice, this list of conditions and the following disclaimer.\n    * Redistributions in binary form must reproduce the above copyright\n      notice, this list of conditions and the following disclaimer in the\n      documentation and/or other materials provided with the distribution.\n    * Neither the name of the <organization> nor the\n      names of its contributors may be used to endorse or promote products\n      derived from this software without specific prior written permission.\n\nTHIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\" AND\nANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED\nWARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE\nDISCLAIMED. IN NO EVENT SHALL <copyright holder> BE LIABLE FOR ANY\nDIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES\n(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;\nLOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND\nON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\n(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS\nSOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
+			  "description": "BSD license grants the recipient the right to use the code for any purpose, as long as the original author is acknowledged."
 		}
 	},
 	{
